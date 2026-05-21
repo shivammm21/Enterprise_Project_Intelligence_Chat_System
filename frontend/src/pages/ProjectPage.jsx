@@ -54,60 +54,68 @@ export default function ProjectPage() {
   if (loading) return <LoadingSpinner fullScreen />
 
   return (
-    <div className="flex min-h-screen bg-gray-950">
+    <div className="flex h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 overflow-hidden">
       <Sidebar projects={project ? [project] : []} />
 
-      <main className="flex-1 overflow-auto">
-        {/* Header */}
-        <div className="sticky top-0 z-10 bg-gray-950/80 backdrop-blur-sm border-b border-gray-800 px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => navigate('/dashboard')}
-                className="text-gray-500 hover:text-gray-300 transition-colors"
+      <main className="flex-1 flex flex-col min-w-0">
+        {/* Fixed Header Section */}
+        <div className="flex-shrink-0">
+          {/* Top Navigation */}
+          <div className="bg-gray-900/60 backdrop-blur-xl border-b border-gray-800/50 px-8 py-5 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="text-gray-500 hover:text-primary-400 transition-all hover:-translate-x-1 group"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-gray-500">Dashboard</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-gray-600" />
+                  <span className="text-white font-semibold">{project?.name}</span>
+                </div>
+              </div>
+              <Link
+                to={`/projects/${id}/chat`}
+                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-primary-500/30 hover:shadow-primary-500/50 hover:scale-105"
               >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <span>Dashboard</span>
-                <ChevronRight className="h-3 w-3" />
-                <span className="text-gray-200 font-medium">{project?.name}</span>
-              </div>
+                <MessageSquare className="h-4 w-4" />
+                Open Chat
+              </Link>
             </div>
-            <Link
-              to={`/projects/${id}/chat`}
-              className="btn-primary flex items-center gap-2"
-            >
-              <MessageSquare className="h-4 w-4" />
-              Open Chat
-            </Link>
           </div>
-        </div>
 
-        <div className="px-8 py-6">
-          {/* Project header */}
-          <div className="card mb-6">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-primary-600/20 rounded-xl flex items-center justify-center border border-primary-600/30 flex-shrink-0">
-                <FolderOpen className="h-6 w-6 text-primary-400" />
-              </div>
-              <div className="flex-1">
-                <h1 className="text-xl font-bold text-white">{project?.name}</h1>
-                {project?.description && (
-                  <p className="text-gray-400 text-sm mt-1">{project.description}</p>
-                )}
-                <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
-                  <div className="flex items-center gap-1.5">
-                    <FileText className="h-4 w-4" />
-                    <span>{project?.document_count} documents</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <MessageSquare className="h-4 w-4" />
-                    <span>{project?.chat_count} chats</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="h-4 w-4" />
-                    <span>Created {project && format(new Date(project.created_at), 'MMM d, yyyy')}</span>
+          {/* Project Header */}
+          <div className="bg-gray-900/40 backdrop-blur-sm border-b border-gray-800/50 px-8 py-6">
+            <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-6 relative overflow-hidden">
+              {/* Decorative gradient */}
+              <div className="absolute top-0 right-0 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl -mr-48 -mt-48" />
+              
+              <div className="relative flex items-start gap-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-xl shadow-primary-500/30 flex-shrink-0">
+                  <FolderOpen className="h-8 w-8 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h1 className="text-3xl font-bold text-white mb-2">{project?.name}</h1>
+                  {project?.description && (
+                    <p className="text-gray-400 text-base mb-4 max-w-2xl">{project.description}</p>
+                  )}
+                  <div className="flex items-center gap-6 text-sm">
+                    <div className="flex items-center gap-2 text-gray-300 bg-gray-700/30 px-4 py-2 rounded-xl">
+                      <FileText className="h-4 w-4 text-primary-400" />
+                      <span className="font-medium">{project?.document_count}</span>
+                      <span className="text-gray-500">documents</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-300 bg-gray-700/30 px-4 py-2 rounded-xl">
+                      <MessageSquare className="h-4 w-4 text-primary-400" />
+                      <span className="font-medium">{project?.chat_count}</span>
+                      <span className="text-gray-500">chats</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-400">
+                      <Calendar className="h-4 w-4" />
+                      <span>Created {project && format(new Date(project.created_at), 'MMM d, yyyy')}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -115,36 +123,43 @@ export default function ProjectPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 mb-6 bg-gray-900 border border-gray-800 rounded-xl p-1 w-fit">
-            <TabButton active={activeTab === 'documents'} onClick={() => setActiveTab('documents')}>
-              <FileText className="h-4 w-4" />
-              Documents ({documents.length})
-            </TabButton>
-            {isAdmin && (
-              <TabButton active={activeTab === 'upload'} onClick={() => setActiveTab('upload')}>
-                <Upload className="h-4 w-4" />
-                Upload
+          <div className="bg-gray-900/40 backdrop-blur-sm border-b border-gray-800/50 px-8 py-4">
+            <div className="flex gap-2 bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-2 w-fit">
+              <TabButton active={activeTab === 'documents'} onClick={() => setActiveTab('documents')}>
+                <FileText className="h-4 w-4" />
+                Documents ({documents.length})
               </TabButton>
-            )}
-            {isAdmin && (
-              <TabButton active={activeTab === 'access'} onClick={() => setActiveTab('access')}>
-                <ShieldCheck className="h-4 w-4" />
-                Access
-              </TabButton>
-            )}
-            {isAdmin && (
-              <TabButton active={activeTab === 'groups'} onClick={() => setActiveTab('groups')}>
-                <Users className="h-4 w-4" />
-                Groups
-              </TabButton>
-            )}
+              {isAdmin && (
+                <TabButton active={activeTab === 'upload'} onClick={() => setActiveTab('upload')}>
+                  <Upload className="h-4 w-4" />
+                  Upload
+                </TabButton>
+              )}
+              {isAdmin && (
+                <TabButton active={activeTab === 'access'} onClick={() => setActiveTab('access')}>
+                  <ShieldCheck className="h-4 w-4" />
+                  Access
+                </TabButton>
+              )}
+              {isAdmin && (
+                <TabButton active={activeTab === 'groups'} onClick={() => setActiveTab('groups')}>
+                  <Users className="h-4 w-4" />
+                  Groups
+                </TabButton>
+              )}
+            </div>
           </div>
+        </div>
 
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto px-8 py-8">
           {/* Tab content */}
           {activeTab === 'documents' && (
-            <div className="card">
-              <h2 className="text-base font-semibold text-gray-200 mb-4 flex items-center gap-2">
-                <Layers className="h-4 w-4 text-primary-400" />
+            <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8">
+              <h2 className="text-lg font-semibold text-gray-100 mb-6 flex items-center gap-3">
+                <div className="w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center">
+                  <Layers className="h-4 w-4 text-primary-400" />
+                </div>
                 Indexed Documents
               </h2>
               <DocumentList documents={documents} />
@@ -152,12 +167,14 @@ export default function ProjectPage() {
           )}
 
           {activeTab === 'upload' && isAdmin && (
-            <div className="card max-w-xl">
-              <h2 className="text-base font-semibold text-gray-200 mb-4 flex items-center gap-2">
-                <Upload className="h-4 w-4 text-primary-400" />
+            <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 max-w-2xl">
+              <h2 className="text-lg font-semibold text-gray-100 mb-3 flex items-center gap-3">
+                <div className="w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center">
+                  <Upload className="h-4 w-4 text-primary-400" />
+                </div>
                 Upload Document
               </h2>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-gray-400 mb-6 leading-relaxed">
                 Documents are indexed exclusively to this project. The AI will only use these documents when answering questions in this project.
               </p>
               <DocumentUpload projectId={id} onUploaded={handleDocumentUploaded} />
@@ -165,13 +182,13 @@ export default function ProjectPage() {
           )}
 
           {activeTab === 'access' && isAdmin && (
-            <div className="max-w-xl">
+            <div className="max-w-2xl">
               <AccessManager projectId={id} />
             </div>
           )}
 
           {activeTab === 'groups' && isAdmin && (
-            <div className="max-w-xl">
+            <div className="max-w-2xl">
               <GroupManager />
             </div>
           )}
@@ -185,10 +202,10 @@ function TabButton({ active, onClick, children }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+      className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
         active
-          ? 'bg-primary-600 text-white'
-          : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
+          ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30'
+          : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/30'
       }`}
     >
       {children}
