@@ -11,14 +11,20 @@ import {
   Brain,
   User,
 } from 'lucide-react'
+import ConfirmDialog from './ConfirmDialog'
 
 export default function Sidebar({ projects = [] }) {
   const { user, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
   const handleLogout = () => {
+    setShowLogoutConfirm(true)
+  }
+
+  const confirmLogout = () => {
     logout()
     navigate('/login')
   }
@@ -33,9 +39,12 @@ export default function Sidebar({ projects = [] }) {
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-gray-800">
-        <div className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden">
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden hover:opacity-80 transition-opacity cursor-pointer"
+        >
           <img src="/logo.png" alt="VedaSphere" className="w-full h-full object-contain" />
-        </div>
+        </button>
         {!collapsed && (
           <div className="overflow-hidden">
             <p className="text-sm font-semibold text-white truncate">VedaSphere</p>
@@ -51,32 +60,37 @@ export default function Sidebar({ projects = [] }) {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-        <NavItem
-          to="/dashboard"
-          icon={<LayoutDashboard className="h-5 w-5" />}
-          label="Dashboard"
-          collapsed={collapsed}
-          active={location.pathname === '/dashboard'}
-        />
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-shrink-0 px-2 pt-4 pb-1">
+          <NavItem
+            to="/dashboard"
+            icon={<LayoutDashboard className="h-5 w-5" />}
+            label="Dashboard"
+            collapsed={collapsed}
+            active={location.pathname === '/dashboard'}
+          />
+        </div>
 
         {projects.length > 0 && !collapsed && (
-          <div className="pt-4 pb-1">
+          <div className="flex-shrink-0 px-2 pt-4 pb-1">
             <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Projects</p>
           </div>
         )}
 
-        {projects.map((project) => (
-          <NavItem
-            key={project.id}
-            to={`/projects/${project.id}`}
-            icon={<FolderOpen className="h-5 w-5" />}
-            label={project.name}
-            collapsed={collapsed}
-            active={isActive(`/projects/${project.id}`)}
-          />
-        ))}
-      </nav>
+        {/* Scrollable projects list */}
+        <div className="flex-1 overflow-y-auto px-2 pb-4 space-y-1">
+          {projects.map((project) => (
+            <NavItem
+              key={project.id}
+              to={`/projects/${project.id}`}
+              icon={<FolderOpen className="h-5 w-5" />}
+              label={project.name}
+              collapsed={collapsed}
+              active={isActive(`/projects/${project.id}`)}
+            />
+          ))}
+        </div>
+      </div>
 
       {/* User */}
       <div className="border-t border-gray-800 p-3">
@@ -114,6 +128,16 @@ export default function Sidebar({ projects = [] }) {
           </button>
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={confirmLogout}
+        title="Logout"
+        message="Are you sure you want to logout? You will need to sign in again to access your projects."
+        confirmText="Logout"
+        cancelText="Cancel"
+      />
     </aside>
   )
 }

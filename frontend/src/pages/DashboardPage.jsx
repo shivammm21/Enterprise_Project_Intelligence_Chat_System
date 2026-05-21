@@ -71,10 +71,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto px-8 py-8">
-          {/* Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+        {/* Stats - Fixed */}
+        <div className="flex-shrink-0 px-8 py-6 bg-gray-900/40">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <StatCard
               icon={<FolderOpen className="h-6 w-6 text-primary-400" />}
               label="Total Projects"
@@ -97,10 +96,12 @@ export default function DashboardPage() {
               iconBg="bg-green-500/10"
             />
           </div>
+        </div>
 
-          {/* Search */}
-          {projects.length > 0 && (
-            <div className="relative mb-8">
+        {/* Search - Fixed */}
+        {projects.length > 0 && (
+          <div className="flex-shrink-0 px-8 pb-6">
+            <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
               <input
                 type="text"
@@ -110,9 +111,11 @@ export default function DashboardPage() {
                 className="w-full max-w-md bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 text-gray-100 rounded-2xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 placeholder-gray-500 transition-all"
               />
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Projects grid */}
+        {/* Projects grid - Scrollable only */}
+        <div className="flex-1 overflow-y-auto px-8 pb-8">
           {loading ? (
             <div className="flex justify-center py-20">
               <LoadingSpinner size="lg" />
