@@ -22,22 +22,38 @@ export default function ProjectPage() {
   const { user } = useAuth()
   const isAdmin = user?.role === 'admin'
   const [project, setProject] = useState(null)
+  const [allProjects, setAllProjects] = useState([])
   const [documents, setDocuments] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('documents')
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [isTabTransitioning, setIsTabTransitioning] = useState(false)
 
   useEffect(() => {
+    setIsTransitioning(true)
     loadData()
   }, [id])
 
+  const handleTabChange = (tab) => {
+    if (tab === activeTab) return
+    setIsTabTransitioning(true)
+    setTimeout(() => {
+      setActiveTab(tab)
+      setTimeout(() => setIsTabTransitioning(false), 50)
+    }, 150)
+  }
+
   const loadData = async () => {
     try {
-      const [proj, docs] = await Promise.all([
+      const [proj, docs, projects] = await Promise.all([
         projectService.get(id),
         documentService.list(id),
+        projectService.list(),
       ])
       setProject(proj)
       setDocuments(docs)
+      setAllProjects(projects)
+      setTimeout(() => setIsTransitioning(false), 100)
     } catch {
       toast.error('Failed to load project')
       navigate('/dashboard')
@@ -55,7 +71,7 @@ export default function ProjectPage() {
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 overflow-hidden">
-      <Sidebar projects={project ? [project] : []} />
+      <Sidebar projects={allProjects} />
 
       <main className="flex-1 flex flex-col min-w-0">
         {/* Fixed Header Section */}
@@ -71,7 +87,9 @@ export default function ProjectPage() {
                   <ArrowLeft className="h-5 w-5" />
                 </button>
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="text-gray-500">Dashboard</span>
+                  <Link to="/dashboard" className="text-gray-500 hover:text-primary-400 transition-colors">
+                    Dashboard
+                  </Link>
                   <ChevronRight className="h-3.5 w-3.5 text-gray-600" />
                   <span className="text-white font-semibold">{project?.name}</span>
                 </div>
@@ -87,7 +105,9 @@ export default function ProjectPage() {
           </div>
 
           {/* Project Header */}
-          <div className="bg-gray-900/40 backdrop-blur-sm border-b border-gray-800/50 px-8 py-6">
+          <div className={`bg-gray-900/40 backdrop-blur-sm border-b border-gray-800/50 px-8 py-6 transition-all duration-300 ${
+            isTransitioning ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'
+          }`}>
             <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-6 relative overflow-hidden">
               {/* Decorative gradient */}
               <div className="absolute top-0 right-0 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl -mr-48 -mt-48" />
@@ -125,24 +145,24 @@ export default function ProjectPage() {
           {/* Tabs */}
           <div className="bg-gray-900/40 backdrop-blur-sm border-b border-gray-800/50 px-8 py-4">
             <div className="flex gap-2 bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-2 w-fit">
-              <TabButton active={activeTab === 'documents'} onClick={() => setActiveTab('documents')}>
+              <TabButton active={activeTab === 'documents'} onClick={() => handleTabChange('documents')}>
                 <FileText className="h-4 w-4" />
                 Documents ({documents.length})
               </TabButton>
               {isAdmin && (
-                <TabButton active={activeTab === 'upload'} onClick={() => setActiveTab('upload')}>
+                <TabButton active={activeTab === 'upload'} onClick={() => handleTabChange('upload')}>
                   <Upload className="h-4 w-4" />
                   Upload
                 </TabButton>
               )}
               {isAdmin && (
-                <TabButton active={activeTab === 'access'} onClick={() => setActiveTab('access')}>
+                <TabButton active={activeTab === 'access'} onClick={() => handleTabChange('access')}>
                   <ShieldCheck className="h-4 w-4" />
                   Access
                 </TabButton>
               )}
               {isAdmin && (
-                <TabButton active={activeTab === 'groups'} onClick={() => setActiveTab('groups')}>
+                <TabButton active={activeTab === 'groups'} onClick={() => handleTabChange('groups')}>
                   <Users className="h-4 w-4" />
                   Groups
                 </TabButton>
@@ -152,10 +172,14 @@ export default function ProjectPage() {
         </div>
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto px-8 py-8">
+        <div className={`flex-1 overflow-y-auto px-8 py-8 transition-all duration-300 ${
+          isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'
+        }`}>
           {/* Tab content */}
           {activeTab === 'documents' && (
-            <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8">
+            <div className={`bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 transition-all duration-300 ${
+              isTabTransitioning ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+            }`}>
               <h2 className="text-lg font-semibold text-gray-100 mb-6 flex items-center gap-3">
                 <div className="w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center">
                   <Layers className="h-4 w-4 text-primary-400" />
@@ -167,7 +191,9 @@ export default function ProjectPage() {
           )}
 
           {activeTab === 'upload' && isAdmin && (
-            <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 max-w-2xl">
+            <div className={`bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 max-w-2xl transition-all duration-300 ${
+              isTabTransitioning ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+            }`}>
               <h2 className="text-lg font-semibold text-gray-100 mb-3 flex items-center gap-3">
                 <div className="w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center">
                   <Upload className="h-4 w-4 text-primary-400" />
@@ -182,13 +208,17 @@ export default function ProjectPage() {
           )}
 
           {activeTab === 'access' && isAdmin && (
-            <div className="max-w-2xl">
+            <div className={`transition-all duration-300 ${
+              isTabTransitioning ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+            }`}>
               <AccessManager projectId={id} />
             </div>
           )}
 
           {activeTab === 'groups' && isAdmin && (
-            <div className="max-w-2xl">
+            <div className={`max-w-2xl transition-all duration-300 ${
+              isTabTransitioning ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+            }`}>
               <GroupManager />
             </div>
           )}

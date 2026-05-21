@@ -84,78 +84,80 @@ export default function AccessManager({ projectId }) {
   if (loading) return <div className="flex justify-center py-10"><LoadingSpinner /></div>
 
   return (
-    <div className="space-y-5">
-
-      {/* Grant by group */}
-      {groups.length > 0 && (
-        <div className="card border-primary-600/20">
-          <h3 className="text-sm font-semibold text-gray-200 mb-3 flex items-center gap-2">
-            <Users className="h-4 w-4 text-primary-400" />
-            Grant Access by Group
-          </h3>
-          <div className="flex gap-3">
-            <select
-              value={selectedGroupId}
-              onChange={(e) => setSelectedGroupId(e.target.value)}
-              className="input-field flex-1"
-            >
-              <option value="">Select a group...</option>
-              {groups.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name} ({g.member_count} member{g.member_count !== 1 ? 's' : ''})
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={handleGrantGroup}
-              disabled={!selectedGroupId || grantingGroup}
-              className="btn-primary flex items-center gap-2 whitespace-nowrap"
-            >
-              <Users className="h-4 w-4" />
-              {grantingGroup ? 'Granting...' : 'Grant Group'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Grant individual user */}
-      <div className="card">
-        <h3 className="text-sm font-semibold text-gray-200 mb-3 flex items-center gap-2">
-          <UserPlus className="h-4 w-4 text-primary-400" />
-          Grant Individual Access
-        </h3>
-        {availableUsers.length === 0 ? (
-          <p className="text-sm text-gray-500">All registered users already have access.</p>
-        ) : (
-          <div className="flex gap-3">
-            <select
-              value={selectedUserId}
-              onChange={(e) => setSelectedUserId(e.target.value)}
-              className="input-field flex-1"
-            >
-              <option value="">Select a user...</option>
-              {availableUsers.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name}{u.job_title ? ` — ${u.job_title}` : ''}{u.department ? ` (${u.department})` : ''}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={handleGrant}
-              disabled={!selectedUserId || granting}
-              className="btn-primary flex items-center gap-2 whitespace-nowrap"
-            >
-              <UserPlus className="h-4 w-4" />
-              {granting ? 'Granting...' : 'Grant Access'}
-            </button>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Left Column - Grant Access */}
+      <div className="space-y-6">
+        {/* Grant by group */}
+        {groups.length > 0 && (
+          <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-6">
+            <h3 className="text-base font-semibold text-gray-100 mb-4 flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary-400" />
+              Grant Access by Group
+            </h3>
+            <div className="flex flex-col gap-3">
+              <select
+                value={selectedGroupId}
+                onChange={(e) => setSelectedGroupId(e.target.value)}
+                className="input-field text-base"
+              >
+                <option value="">Select a group...</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name} ({g.member_count} member{g.member_count !== 1 ? 's' : ''})
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleGrantGroup}
+                disabled={!selectedGroupId || grantingGroup}
+                className="btn-primary flex items-center justify-center gap-2"
+              >
+                <Users className="h-4 w-4" />
+                {grantingGroup ? 'Granting...' : 'Grant Group'}
+              </button>
+            </div>
           </div>
         )}
+
+        {/* Grant individual user */}
+        <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-6">
+          <h3 className="text-base font-semibold text-gray-100 mb-4 flex items-center gap-2">
+            <UserPlus className="h-5 w-5 text-primary-400" />
+            Grant Individual Access
+          </h3>
+          {availableUsers.length === 0 ? (
+            <p className="text-sm text-gray-400">All registered users already have access.</p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <select
+                value={selectedUserId}
+                onChange={(e) => setSelectedUserId(e.target.value)}
+                className="input-field text-base"
+              >
+                <option value="">Select a user...</option>
+                {availableUsers.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name}{u.job_title ? ` — ${u.job_title}` : ''}{u.department ? ` (${u.department})` : ''}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleGrant}
+                disabled={!selectedUserId || granting}
+                className="btn-primary flex items-center justify-center gap-2"
+              >
+                <UserPlus className="h-4 w-4" />
+                {granting ? 'Granting...' : 'Grant Access'}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Users with access */}
-      <div className="card">
-        <h3 className="text-sm font-semibold text-gray-200 mb-4 flex items-center gap-2">
-          <ShieldCheck className="h-4 w-4 text-primary-400" />
+      {/* Right Column - Users with Access */}
+      <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-6">
+        <h3 className="text-base font-semibold text-gray-100 mb-4 flex items-center gap-2">
+          <ShieldCheck className="h-5 w-5 text-primary-400" />
           Users with Access
           <span className="ml-auto text-xs text-gray-500 font-normal">
             {grantedUsers.length} user{grantedUsers.length !== 1 ? 's' : ''}
@@ -163,49 +165,46 @@ export default function AccessManager({ projectId }) {
         </h3>
 
         {grantedUsers.length === 0 ? (
-          <div className="text-center py-8">
-            <ShieldCheck className="h-8 w-8 text-gray-700 mx-auto mb-2" />
-            <p className="text-sm text-gray-500">No users have been granted access yet.</p>
+          <div className="text-center py-12">
+            <ShieldCheck className="h-10 w-10 text-gray-700 mx-auto mb-3" />
+            <p className="text-sm text-gray-400">No users have been granted access yet.</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
             {grantedUsers.map((u) => {
               const profile = allUsers.find((au) => au.id === u.id)
               return (
                 <div key={u.id}
-                  className="flex items-center justify-between px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl"
+                  className="flex items-start justify-between px-4 py-3 bg-gray-700/30 border border-gray-600/30 rounded-2xl hover:border-gray-600/50 transition-all"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-primary-600/20 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-semibold text-primary-400">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 bg-primary-600/20 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-sm font-semibold text-primary-400">
                         {u.name.charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-200">{u.name}</p>
-                      <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                        <span className="text-xs text-gray-500">{u.email}</span>
-                        {profile?.job_title && (
-                          <span className="flex items-center gap-1 text-xs text-gray-500">
-                            <Briefcase className="h-3 w-3" />{profile.job_title}
-                          </span>
-                        )}
-                        {profile?.department && (
-                          <span className="flex items-center gap-1 text-xs text-gray-500">
-                            <Building2 className="h-3 w-3" />{profile.department}
-                          </span>
-                        )}
-                        {profile?.phone && (
-                          <span className="flex items-center gap-1 text-xs text-gray-500">
-                            <Phone className="h-3 w-3" />{profile.phone}
-                          </span>
-                        )}
-                      </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-200 truncate">{u.name}</p>
+                      <p className="text-xs text-gray-500 truncate">{u.email}</p>
+                      {(profile?.job_title || profile?.department) && (
+                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                          {profile?.job_title && (
+                            <span className="flex items-center gap-1 text-xs text-gray-500 bg-gray-600/20 px-2 py-0.5 rounded-full">
+                              <Briefcase className="h-3 w-3" />{profile.job_title}
+                            </span>
+                          )}
+                          {profile?.department && (
+                            <span className="flex items-center gap-1 text-xs text-gray-500 bg-gray-600/20 px-2 py-0.5 rounded-full">
+                              <Building2 className="h-3 w-3" />{profile.department}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <button
                     onClick={() => handleRevoke(u.id, u.name)}
-                    className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-red-400 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-900/20"
+                    className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-red-400 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-900/20 flex-shrink-0 ml-2"
                   >
                     <UserMinus className="h-3.5 w-3.5" />
                     Revoke
