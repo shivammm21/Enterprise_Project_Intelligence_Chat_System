@@ -6,6 +6,7 @@ import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import ProjectPage from './pages/ProjectPage'
 import ChatPage from './pages/ChatPage'
+import GroupsPage from './pages/GroupsPage'
 import LoadingSpinner from './components/LoadingSpinner'
 
 function PrivateRoute({ children }) {
@@ -47,6 +48,7 @@ export default function App() {
       <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
       <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
       {/* Project detail — admin only; users are redirected to chat */}
+      <Route path="/groups" element={<AdminRoute><GroupsPage /></AdminRoute>} />
       <Route path="/projects/:id" element={<ProjectRoute />} />
       <Route path="/projects/:id/chat" element={<PrivateRoute><ChatPage /></PrivateRoute>} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
