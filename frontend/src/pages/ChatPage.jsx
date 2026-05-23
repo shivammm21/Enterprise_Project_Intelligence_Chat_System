@@ -5,6 +5,8 @@ import { projectService } from '../services/projects'
 import { chatService } from '../services/chat'
 import LoadingSpinner from '../components/LoadingSpinner'
 import TypingAnimation from '../components/TypingAnimation'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import {
   ArrowLeft, Send, Bot, User, ChevronDown, ChevronUp,
   FileText, Sparkles, FolderOpen, MessageSquare, AlertCircle, Copy, Check
@@ -365,17 +367,64 @@ function ChatMessage({ message, onTypingComplete }) {
                 ? 'bg-gradient-to-br from-red-900/40 to-red-900/20 backdrop-blur-sm border border-red-700/30 text-red-200 rounded-3xl rounded-tl-md'
                 : 'bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 text-gray-100 rounded-3xl rounded-tl-md'
           }`}>
-            <div className="whitespace-pre-wrap break-words">
-              {!isUser && message.isTyping ? (
+            {!isUser && message.isTyping ? (
+              <div className="whitespace-pre-wrap break-words">
                 <TypingAnimation 
                   text={message.content} 
                   speed={15}
                   onComplete={onTypingComplete}
                 />
-              ) : (
-                message.content
-              )}
-            </div>
+              </div>
+            ) : isUser ? (
+              <div className="whitespace-pre-wrap break-words">
+                {message.content}
+              </div>
+            ) : (
+              <div className="break-words prose prose-invert max-w-none">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    // Headings
+                    h1: ({...props}) => <h1 className="text-2xl font-bold mb-4 mt-6 text-white" {...props} />,
+                    h2: ({...props}) => <h2 className="text-xl font-bold mb-3 mt-5 text-white" {...props} />,
+                    h3: ({...props}) => <h3 className="text-lg font-bold mb-2 mt-4 text-white" {...props} />,
+                    // Paragraphs
+                    p: ({...props}) => <p className="mb-4 last:mb-0 leading-relaxed" {...props} />,
+                    // Lists
+                    ul: ({...props}) => <ul className="list-disc list-outside mb-4 space-y-2 ml-6" {...props} />,
+                    ol: ({...props}) => <ol className="list-decimal list-outside mb-4 space-y-2 ml-6" {...props} />,
+                    li: ({...props}) => <li className="leading-relaxed" {...props} />,
+                    // Code
+                    code: ({inline, ...props}) => 
+                      inline ? (
+                        <code className="bg-gray-900/80 text-primary-300 px-2 py-1 rounded-md text-[13px] font-mono border border-gray-700/50" {...props} />
+                      ) : (
+                        <code className="block bg-gray-950/80 text-gray-200 p-4 rounded-xl text-[13px] font-mono overflow-x-auto my-4 border border-gray-700/50 leading-relaxed" {...props} />
+                      ),
+                    pre: ({...props}) => <pre className="my-4" {...props} />,
+                    // Links
+                    a: ({...props}) => <a className="text-primary-400 hover:text-primary-300 underline underline-offset-2" target="_blank" rel="noopener noreferrer" {...props} />,
+                    // Strong/Bold
+                    strong: ({...props}) => <strong className="font-bold text-white" {...props} />,
+                    // Emphasis/Italic
+                    em: ({...props}) => <em className="italic text-gray-200" {...props} />,
+                    // Blockquote
+                    blockquote: ({...props}) => <blockquote className="border-l-4 border-primary-500/50 pl-4 py-2 italic text-gray-300 my-4 bg-gray-900/30 rounded-r-lg" {...props} />,
+                    // Horizontal rule
+                    hr: ({...props}) => <hr className="border-gray-700 my-6" {...props} />,
+                    // Tables
+                    table: ({...props}) => <div className="overflow-x-auto my-4"><table className="min-w-full border border-gray-700 rounded-lg" {...props} /></div>,
+                    thead: ({...props}) => <thead className="bg-gray-900/50" {...props} />,
+                    tbody: ({...props}) => <tbody className="divide-y divide-gray-700" {...props} />,
+                    tr: ({...props}) => <tr className="border-b border-gray-700" {...props} />,
+                    th: ({...props}) => <th className="px-4 py-2 text-left text-white font-semibold" {...props} />,
+                    td: ({...props}) => <td className="px-4 py-2 text-gray-300" {...props} />,
+                  }}
+                >
+                  {message.content}
+                </ReactMarkdown>
+              </div>
+            )}
 
             {/* Copy button - only for assistant messages */}
             {!isUser && !message.isError && !message.isTyping && (

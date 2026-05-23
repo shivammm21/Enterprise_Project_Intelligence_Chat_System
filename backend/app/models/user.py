@@ -23,6 +23,7 @@ class User(Base):
     department = Column(String(255), nullable=True)
     phone = Column(String(50), nullable=True)
     bio = Column(Text, nullable=True)
+    github_token = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     projects = relationship("Project", back_populates="owner", cascade="all, delete-orphan")
