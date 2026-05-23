@@ -135,8 +135,53 @@ The app will be available at `http://localhost:3000`
 1. **Register** an account at `/register`
 2. **Create a project** from the dashboard
 3. **Upload documents** (PDF, DOCX, TXT) to the project
-4. **Open Chat** and ask questions — the AI answers only from that project's documents
-5. **Sources** are shown below each answer with relevance scores
+4. **Import GitHub repositories** (optional) - Connect your GitHub account and import code repositories
+5. **Open Chat** and ask questions — the AI answers only from that project's documents
+6. **Sources** are shown below each answer with relevance scores
+
+---
+
+## GitHub Integration (Optional)
+
+The system supports importing GitHub repositories to chat with your code using AI.
+
+### Setup
+
+1. **Create GitHub OAuth App**:
+   - Go to GitHub Settings → Developer settings → OAuth Apps → New OAuth App
+   - Application name: `Your App Name`
+   - Homepage URL: `http://localhost:5173` (or your domain)
+   - Authorization callback URL: `http://localhost:5173/github/callback`
+   - Copy the Client ID and generate a Client Secret
+
+2. **Configure Backend** (`.env`):
+   ```env
+   GITHUB_CLIENT_ID=your-github-oauth-client-id
+   GITHUB_CLIENT_SECRET=your-github-oauth-client-secret
+   ```
+
+3. **Configure Frontend** (`.env`):
+   ```env
+   VITE_GITHUB_CLIENT_ID=your-github-oauth-client-id
+   ```
+
+4. **Run Database Migration**:
+   ```sql
+   -- Add github_token column to users table
+   ALTER TABLE users ADD COLUMN IF NOT EXISTS github_token TEXT;
+   ```
+
+### How It Works
+
+1. Navigate to a project and click the **GitHub** tab
+2. Click **Connect GitHub Account** - you'll be redirected to GitHub for authorization
+3. After authorization, you'll see your repositories
+4. Click **Import** on any repository to:
+   - Clone the repository
+   - Extract code files (.py, .js, .ts, .java, .cpp, .md, etc.)
+   - Create chunks and generate embeddings
+   - Index them for AI chat
+5. Chat with your code using the AI assistant
 
 ---
 
@@ -169,6 +214,14 @@ The app will be available at `http://localhost:3000`
 | POST | `/chat/{project_id}` | Ask a question (RAG) |
 | GET | `/chat/history/{project_id}` | Get chat history |
 
+### GitHub (Optional)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/github/auth` | Exchange OAuth code for token |
+| GET | `/github/repos` | List user's repositories |
+| POST | `/github/import` | Import repository to project |
+| DELETE | `/github/disconnect` | Disconnect GitHub account |
+
 ---
 
 ## Folder Structure
@@ -190,7 +243,8 @@ Chat System/
 │   │   │   ├── auth.py
 │   │   │   ├── projects.py
 │   │   │   ├── documents.py
-│   │   │   └── chat.py
+│   │   │   ├── chat.py
+│   │   │   └── github.py        # GitHub OAuth & import
 │   │   ├── services/            # Business logic
 │   │   │   └── document_service.py
 │   │   ├── rag/                 # LangChain RAG pipeline

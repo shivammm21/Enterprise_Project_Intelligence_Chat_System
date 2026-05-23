@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
 from app.database import init_db, AsyncSessionLocal
 from app.config import settings
-from app.routers import auth, projects, documents, chat, access, groups
+from app.routers import auth, projects, documents, chat, access, groups, github
 
 
 async def seed_admin():
@@ -70,6 +70,7 @@ app.include_router(chat.router)
 app.include_router(access.users_router)
 app.include_router(access.access_router)
 app.include_router(groups.router)
+app.include_router(github.router)
 
 
 @app.get("/health")

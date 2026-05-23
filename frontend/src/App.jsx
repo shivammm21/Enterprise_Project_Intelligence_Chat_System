@@ -6,7 +6,7 @@ import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import ProjectPage from './pages/ProjectPage'
 import ChatPage from './pages/ChatPage'
-import GroupsPage from './pages/GroupsPage'
+import GitHubCallback from './pages/GitHubCallback'
 import LoadingSpinner from './components/LoadingSpinner'
 
 function PrivateRoute({ children }) {
@@ -47,6 +47,7 @@ export default function App() {
       <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
       <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+      <Route path="/github/callback" element={<PrivateRoute><GitHubCallback /></PrivateRoute>} />
       {/* Project detail — admin only; users are redirected to chat */}
       <Route path="/groups" element={<AdminRoute><GroupsPage /></AdminRoute>} />
       <Route path="/projects/:id" element={<ProjectRoute />} />

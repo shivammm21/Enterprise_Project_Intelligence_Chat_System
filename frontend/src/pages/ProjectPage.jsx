@@ -8,10 +8,11 @@ import DocumentUpload from '../components/DocumentUpload'
 import DocumentList from '../components/DocumentList'
 import AccessManager from '../components/AccessManager'
 import GroupManager from '../components/GroupManager'
+import GitHubIntegration from '../components/GitHubIntegration'
 import LoadingSpinner from '../components/LoadingSpinner'
 import {
   ArrowLeft, MessageSquare, FileText, Upload, FolderOpen,
-  ChevronRight, Layers, Calendar, ShieldCheck, Users
+  ChevronRight, Layers, Calendar, ShieldCheck, Users, Github
 } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
@@ -65,6 +66,19 @@ export default function ProjectPage() {
   const handleDocumentUploaded = (doc) => {
     setDocuments([doc, ...documents])
     setProject((p) => ({ ...p, document_count: (p.document_count || 0) + 1 }))
+  }
+
+  const handleImportComplete = async () => {
+    // Refresh documents list after GitHub import
+    try {
+      const docs = await documentService.list(id)
+      setDocuments(docs)
+      // Also refresh project to update document count
+      const proj = await projectService.get(id)
+      setProject(proj)
+    } catch (error) {
+      console.error('Error refreshing documents:', error)
+    }
   }
 
   if (loading) return <LoadingSpinner fullScreen />
@@ -156,6 +170,12 @@ export default function ProjectPage() {
                 </TabButton>
               )}
               {isAdmin && (
+                <TabButton active={activeTab === 'github'} onClick={() => handleTabChange('github')}>
+                  <Github className="h-4 w-4" />
+                  GitHub
+                </TabButton>
+              )}
+              {isAdmin && (
                 <TabButton active={activeTab === 'access'} onClick={() => handleTabChange('access')}>
                   <ShieldCheck className="h-4 w-4" />
                   Access
@@ -204,6 +224,14 @@ export default function ProjectPage() {
                 Documents are indexed exclusively to this project. The AI will only use these documents when answering questions in this project.
               </p>
               <DocumentUpload projectId={id} onUploaded={handleDocumentUploaded} />
+            </div>
+          )}
+
+          {activeTab === 'github' && isAdmin && (
+            <div className={`transition-all duration-300 ${
+              isTabTransitioning ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+            }`}>
+              <GitHubIntegration projectId={id} onImportComplete={handleImportComplete} />
             </div>
           )}
 

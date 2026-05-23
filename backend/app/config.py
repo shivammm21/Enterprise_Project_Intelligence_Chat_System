@@ -28,12 +28,18 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str = "changeme-admin-password"
     ADMIN_NAME: str = "Admin"
 
+    # GitHub OAuth (optional)
+    GITHUB_CLIENT_ID: str = ""
+    GITHUB_CLIENT_SECRET: str = ""
+
     @property
     def AI_PROVIDER(self) -> str:
         """Auto-detect provider from whichever API key is present. OpenAI takes priority."""
-        if self.OPENAI_API_KEY:
+        # Check if OpenAI key is set and not a placeholder
+        if self.OPENAI_API_KEY and not self.OPENAI_API_KEY.startswith("sk-your-"):
             return "openai"
-        if self.GOOGLE_API_KEY:
+        # Check if Gemini key is set and not a placeholder
+        if self.GOOGLE_API_KEY and not self.GOOGLE_API_KEY.startswith("AIza..."):
             return "gemini"
         raise ValueError(
             "No AI provider configured. Set OPENAI_API_KEY or GOOGLE_API_KEY in your .env file."
