@@ -5,6 +5,8 @@ import { projectService } from '../services/projects'
 import { chatService } from '../services/chat'
 import LoadingSpinner from '../components/LoadingSpinner'
 import TypingAnimation from '../components/TypingAnimation'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import {
   ArrowLeft, Send, Bot, User, ChevronDown, ChevronUp,
   FileText, Sparkles, FolderOpen, MessageSquare, AlertCircle, Copy, Check
@@ -26,6 +28,12 @@ export default function ChatPage() {
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const messagesContainerRef = useRef(null)
+
+  const starterSuggestions = [
+    'Summarize the key points from the uploaded documents.',
+    'What are the main risks or action items mentioned in these files?',
+    'Show me where the answer comes from in the source documents.',
+  ]
 
   useEffect(() => {
     loadData()
@@ -58,14 +66,14 @@ export default function ChatPage() {
     }
   }
 
-  const handleSend = async () => {
-    const question = input.trim()
-    if (!question || sending) return
+  const sendMessage = async (question) => {
+    const trimmed = question.trim()
+    if (!trimmed || sending) return
 
     const userMsg = {
       id: `user-${Date.now()}`,
       role: 'user',
-      content: question,
+      content: trimmed,
       timestamp: new Date().toISOString(),
     }
     setMessages((prev) => [...prev, userMsg])
@@ -73,7 +81,7 @@ export default function ChatPage() {
     setSending(true)
 
     try {
-      const response = await chatService.sendMessage(id, question)
+      const response = await chatService.sendMessage(id, trimmed)
       const assistantMsg = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
@@ -98,6 +106,14 @@ export default function ChatPage() {
       setSending(false)
       inputRef.current?.focus()
     }
+  }
+
+  const handleSend = async () => {
+    await sendMessage(input)
+  }
+
+  const handleSuggestionClick = async (suggestion) => {
+    await sendMessage(suggestion)
   }
 
   const handleKeyDown = (e) => {
@@ -208,9 +224,20 @@ export default function ChatPage() {
                 </div>
                 <h2 className="text-xl font-semibold text-gray-100 mb-3">Start a conversation</h2>
                 <p className="text-gray-400 text-sm max-w-md leading-relaxed">
-                  Ask anything about your documents. The AI will search through {project?.document_count} document(s) 
-                  to provide accurate answers with source citations.
+                  Ask anything about your documents. The AI will search through {project?.document_count} document(s) to provide accurate answers with source citations.
                 </p>
+
+                <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {starterSuggestions.map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      className="text-left rounded-3xl border border-gray-700/70 bg-gray-800/70 px-5 py-4 transition-all hover:border-primary-500/40 hover:bg-gray-800 text-sm text-gray-200 shadow-sm shadow-black/10"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -373,7 +400,36 @@ function ChatMessage({ message, onTypingComplete }) {
                   onComplete={onTypingComplete}
                 />
               ) : (
-                message.content
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    p: ({ node, ...props }) => <p className="whitespace-pre-wrap break-words mb-2" {...props} />,
+                    a: ({ node, ...props }) => (
+                      <a
+                        className="text-primary-300 underline hover:text-primary-200"
+                        target="_blank"
+                        rel="noreferrer"
+                        {...props}
+                      />
+                    ),
+                    code: ({ node, inline, className, children, ...props }) => {
+                      return inline ? (
+                        <code className="rounded px-1 py-0.5 bg-gray-900 text-indigo-200 text-sm" {...props}>
+                          {children}
+                        </code>
+                      ) : (
+                        <pre className="rounded-3xl bg-gray-900 p-4 overflow-x-auto text-sm" {...props}>
+                          <code>{children}</code>
+                        </pre>
+                      )
+                    },
+                    li: ({ node, ...props }) => <li className="ml-4 list-disc text-gray-200" {...props} />,
+                    strong: ({ node, ...props }) => <strong className="font-semibold text-white" {...props} />,
+                    em: ({ node, ...props }) => <em className="italic text-gray-200" {...props} />,
+                  }}
+                >
+                  {message.content}
+                </ReactMarkdown>
               )}
             </div>
 
