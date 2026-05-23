@@ -12,7 +12,7 @@ export default defineConfig({
     ],
     proxy: {
       '/api': {
-        target: 'https://princess-hip-acres-assembly.trycloudflare.com/', //http://localhost:8000/
+        target: 'http://localhost:8000/', //http://localhost:8000/
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
