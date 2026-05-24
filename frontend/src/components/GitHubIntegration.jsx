@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { Github, GitBranch, Lock, Unlock, ExternalLink, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Github as GithubIcon, GitBranch, Lock, Unlock, ExternalLink, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
 import { githubService } from '../services/github'
 import toast from 'react-hot-toast'
 
@@ -72,7 +72,7 @@ export default function GitHubIntegration({ projectId, onImportComplete }) {
       <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8">
         <div className="text-center max-w-md mx-auto">
           <div className="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-800 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl relative">
-            <Github className="h-10 w-10 text-gray-300" />
+            <GithubIcon className="h-10 w-10 text-gray-300" />
             <div className="absolute inset-0 rounded-3xl bg-primary-500/20 animate-pulse" />
           </div>
           <h3 className="text-2xl font-bold text-white mb-3">Checking GitHub Connection</h3>
@@ -90,7 +90,7 @@ export default function GitHubIntegration({ projectId, onImportComplete }) {
       <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8">
         <div className="text-center max-w-md mx-auto">
           <div className="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-800 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
-            <Github className="h-10 w-10 text-gray-300" />
+            <GithubIcon className="h-10 w-10 text-gray-300" />
           </div>
           <h3 className="text-2xl font-bold text-white mb-3">Connect GitHub</h3>
           <p className="text-gray-400 mb-8 leading-relaxed">
@@ -100,7 +100,7 @@ export default function GitHubIntegration({ projectId, onImportComplete }) {
             onClick={handleConnect}
             className="flex items-center gap-3 px-6 py-3 bg-gradient-to-br from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-primary-500/30 hover:shadow-primary-500/50 hover:scale-105 mx-auto"
           >
-            <Github className="h-5 w-5" />
+            <GithubIcon className="h-5 w-5" />
             Connect GitHub Account
             <ExternalLink className="h-4 w-4" />
           </button>
@@ -180,7 +180,7 @@ export default function GitHubIntegration({ projectId, onImportComplete }) {
                     </>
                   ) : (
                     <>
-                      <Github className="h-4 w-4" />
+                      <GithubIcon className="h-4 w-4" />
                       Import
                     </>
                   )}

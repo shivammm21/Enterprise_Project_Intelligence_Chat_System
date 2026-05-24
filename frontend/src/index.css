@@ -104,3 +104,62 @@
     animation: scan 2s ease-in-out infinite;
   }
 }
+
+/* Markdown prose styling */
+.prose {
+  color: inherit;
+}
+
+.prose strong {
+  font-weight: 700;
+  color: inherit;
+}
+
+.prose em {
+  font-style: italic;
+  color: inherit;
+}
+
+.prose code {
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.prose pre {
+  margin: 0.5rem 0;
+}
+
+.prose ul,
+.prose ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.prose li {
+  margin: 0.25rem 0;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-weight: 700;
+  color: inherit;
+}
+
+.prose a {
+  text-decoration: underline;
+}
+
+.prose blockquote {
+  margin: 0.5rem 0;
+}
+
+.prose p {
+  margin: 0;
+}
+
+.prose p + p {
+  margin-top: 0.5rem;
+}

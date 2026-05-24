@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { projectService } from '../services/projects'
 import { chatService } from '../services/chat'
 import LoadingSpinner from '../components/LoadingSpinner'
 import TypingAnimation from '../components/TypingAnimation'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import {
   ArrowLeft, Send, Bot, User, ChevronDown, ChevronUp,
   FileText, Sparkles, FolderOpen, MessageSquare, AlertCircle, Copy, Check
@@ -391,7 +393,7 @@ function ChatMessage({ message, onTypingComplete }) {
                 : 'bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 text-gray-100 rounded-3xl rounded-tl-md'
           }`}>
             {!isUser && message.isTyping ? (
-              <div className="whitespace-pre-wrap break-words">
+              <div className="whitespace-pre-wrap break-words prose prose-invert prose-sm max-w-none">
                 <TypingAnimation 
                   text={message.content} 
                   speed={15}
@@ -407,8 +409,63 @@ function ChatMessage({ message, onTypingComplete }) {
                 {message.content}
               </div>
             ) : (
-              <div className="whitespace-pre-wrap break-words">
-                {message.content}
+              <div className="prose prose-invert prose-sm max-w-none">
+                <ReactMarkdown 
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    // Style code blocks
+                    code: ({node, inline, className, children, ...props}) => {
+                      return inline ? (
+                        <code className="bg-gray-700/50 text-primary-300 px-1.5 py-0.5 rounded text-xs" {...props}>
+                          {children}
+                        </code>
+                      ) : (
+                        <code className="block bg-gray-900/50 text-gray-200 p-3 rounded-lg text-xs overflow-x-auto" {...props}>
+                          {children}
+                        </code>
+                      )
+                    },
+                    // Style links
+                    a: ({node, children, ...props}) => (
+                      <a className="text-primary-400 hover:text-primary-300 underline" {...props}>
+                        {children}
+                      </a>
+                    ),
+                    // Style lists
+                    ul: ({node, children, ...props}) => (
+                      <ul className="list-disc list-inside space-y-1" {...props}>
+                        {children}
+                      </ul>
+                    ),
+                    ol: ({node, children, ...props}) => (
+                      <ol className="list-decimal list-inside space-y-1" {...props}>
+                        {children}
+                      </ol>
+                    ),
+                    // Style headings
+                    h1: ({node, children, ...props}) => (
+                      <h1 className="text-xl font-bold mt-4 mb-2" {...props}>{children}</h1>
+                    ),
+                    h2: ({node, children, ...props}) => (
+                      <h2 className="text-lg font-bold mt-3 mb-2" {...props}>{children}</h2>
+                    ),
+                    h3: ({node, children, ...props}) => (
+                      <h3 className="text-base font-bold mt-2 mb-1" {...props}>{children}</h3>
+                    ),
+                    // Style paragraphs
+                    p: ({node, children, ...props}) => (
+                      <p className="mb-2 leading-relaxed" {...props}>{children}</p>
+                    ),
+                    // Style blockquotes
+                    blockquote: ({node, children, ...props}) => (
+                      <blockquote className="border-l-4 border-primary-500/50 pl-4 italic text-gray-300" {...props}>
+                        {children}
+                      </blockquote>
+                    ),
+                  }}
+                >
+                  {message.content}
+                </ReactMarkdown>
               </div>
             )}
 
