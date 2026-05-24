@@ -8,7 +8,7 @@ import ChatPage from './pages/ChatPage'
 import GitHubCallback from './pages/GitHubCallback'
 import GroupsPage from './pages/GroupsPage'
 import LoadingSpinner from './components/LoadingSpinner'
-
+//add
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth()
   if (loading) return <LoadingSpinner fullScreen />
