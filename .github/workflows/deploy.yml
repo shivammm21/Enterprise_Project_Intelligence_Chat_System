@@ -152,8 +152,18 @@ jobs:
               exit 1
             fi
             
-            # Build and start containers
-            $COMPOSE build backend frontend
+            # Enable BuildKit for better caching and performance
+            export DOCKER_BUILDKIT=1
+            export COMPOSE_DOCKER_CLI_BUILD=1
+            
+            # Build with limited parallelism to avoid memory issues
+            echo "Building backend..."
+            $COMPOSE build --no-cache backend
+            
+            echo "Building frontend..."
+            $COMPOSE build --no-cache frontend
+            
+            # Start containers
             $COMPOSE up -d backend frontend
             
             # Show running containers
@@ -162,5 +172,8 @@ jobs:
             # Clean up old releases (keep last 5)
             cd "$APP_ROOT/releases"
             ls -t | tail -n +6 | xargs -r rm -rf
+            
+            # Clean up old Docker images
+            docker image prune -af --filter "until=24h"
           REMOTE
 
