@@ -7,12 +7,14 @@ export default function GitHubIntegration({ projectId, onImportComplete }) {
   const [isConnected, setIsConnected] = useState(false)
   const [repos, setRepos] = useState([])
   const [importing, setImporting] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     checkConnection()
   }, [])
 
   const checkConnection = async () => {
+    setLoading(true)
     try {
       const status = await githubService.checkStatus()
       if (status.connected) {
@@ -26,6 +28,8 @@ export default function GitHubIntegration({ projectId, onImportComplete }) {
     } catch (error) {
       console.error('Error checking GitHub connection:', error)
       setIsConnected(false)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -60,6 +64,25 @@ export default function GitHubIntegration({ projectId, onImportComplete }) {
     } finally {
       setImporting(null)
     }
+  }
+
+  // Show loading only when checking connection and fetching repos
+  if (loading) {
+    return (
+      <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8">
+        <div className="text-center max-w-md mx-auto">
+          <div className="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-800 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl relative">
+            <Github className="h-10 w-10 text-gray-300" />
+            <div className="absolute inset-0 rounded-3xl bg-primary-500/20 animate-pulse" />
+          </div>
+          <h3 className="text-2xl font-bold text-white mb-3">Checking GitHub Connection</h3>
+          <div className="flex items-center justify-center gap-2 text-gray-400">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span>Loading...</span>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (!isConnected) {
