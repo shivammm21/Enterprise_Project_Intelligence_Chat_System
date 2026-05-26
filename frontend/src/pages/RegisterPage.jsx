@@ -42,125 +42,161 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-lg">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4">
-            <img src="/logo.png" alt="VedaSphere" className="w-full h-full object-contain" />
-          </div>
-          <h1 className="text-2xl font-bold text-white">Create your account</h1>
-          <p className="text-gray-400 mt-1 text-sm">Fill in your details so admins know who you are</p>
-        </div>
-
-        <div className="card">
-          <form onSubmit={handleSubmit} className="space-y-4">
-
-            {/* ── Account details ── */}
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Account</p>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">Full Name *</label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                <input type="text" value={form.name} onChange={set('name')}
-                  placeholder="Jane Smith" className="input-field pl-10" required autoFocus />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">Email *</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                <input type="email" value={form.email} onChange={set('email')}
-                  placeholder="you@company.com" className="input-field pl-10" required />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">Password *</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                  <input type={showPassword ? 'text' : 'password'} value={form.password}
-                    onChange={set('password')} placeholder="Min. 6 chars"
-                    className="input-field pl-10 pr-10" required />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">Confirm Password *</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                  <input type={showPassword ? 'text' : 'password'} value={form.confirmPassword}
-                    onChange={set('confirmPassword')} placeholder="Repeat password"
-                    className="input-field pl-10" required />
-                </div>
-              </div>
-            </div>
-
-            {/* ── Profile details ── */}
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider pt-2">
-              Profile <span className="normal-case font-normal text-gray-600">(helps admin identify you)</span>
-            </p>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">Job Title</label>
-                <div className="relative">
-                  <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                  <input type="text" value={form.job_title} onChange={set('job_title')}
-                    placeholder="e.g. Software Engineer" className="input-field pl-10" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">Department</label>
-                <div className="relative">
-                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                  <input type="text" value={form.department} onChange={set('department')}
-                    placeholder="e.g. Engineering" className="input-field pl-10" />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">Phone</label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                <input type="tel" value={form.phone} onChange={set('phone')}
-                  placeholder="+1 555 000 0000" className="input-field pl-10" />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">Short Bio</label>
-              <div className="relative">
-                <FileText className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-                <textarea value={form.bio} onChange={set('bio')} rows={2}
-                  placeholder="A few words about yourself and your role..."
-                  className="input-field pl-10 resize-none" />
-              </div>
-            </div>
-
-            {error && (
-              <div className="bg-red-900/30 border border-red-700/50 text-red-400 text-sm px-4 py-3 rounded-lg">
-                {error}
-              </div>
-            )}
-
-            <button type="submit" disabled={loading} className="btn-primary w-full py-3 mt-2">
-              {loading ? 'Creating account...' : 'Create Account'}
-            </button>
-          </form>
-
-          <p className="text-center text-sm text-gray-500 mt-6">
-            Already have an account?{' '}
-            <Link to="/login" className="text-primary-400 hover:text-primary-300 font-medium">
-              Sign in
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+      {/* Navbar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800/50">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-3 group">
+              <img 
+                src="/logo.png" 
+                alt="VedaSphere" 
+                className="h-10 w-10 group-hover:scale-110 transition-transform"
+              />
+              <span className="text-xl font-bold text-white">VedaSphere</span>
             </Link>
-          </p>
+
+            {/* Nav Links */}
+            <div className="flex items-center gap-4">
+              <Link
+                to="/login"
+                className="px-5 py-2 text-gray-300 hover:text-white transition-colors text-sm font-medium"
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="px-5 py-2 bg-gradient-to-br from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-primary-500/30 hover:shadow-primary-500/50 hover:scale-105 text-sm"
+              >
+                Get Started
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Register Form */}
+      <div className="flex items-center justify-center min-h-screen p-4 pt-24">
+        <div className="w-full max-w-lg">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4">
+              <img src="/logo.png" alt="VedaSphere" className="w-full h-full object-contain" />
+            </div>
+            <h1 className="text-2xl font-bold text-white">Create your account</h1>
+            <p className="text-gray-400 mt-1 text-sm">Fill in your details so admins know who you are</p>
+          </div>
+
+          <div className="card">
+            <form onSubmit={handleSubmit} className="space-y-4">
+
+              {/* ── Account details ── */}
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Account</p>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">Full Name *</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                  <input type="text" value={form.name} onChange={set('name')}
+                    placeholder="Jane Smith" className="input-field pl-10" required autoFocus />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">Email *</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                  <input type="email" value={form.email} onChange={set('email')}
+                    placeholder="you@company.com" className="input-field pl-10" required />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Password *</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                    <input type={showPassword ? 'text' : 'password'} value={form.password}
+                      onChange={set('password')} placeholder="Min. 6 chars"
+                      className="input-field pl-10 pr-10" required />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Confirm Password *</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                    <input type={showPassword ? 'text' : 'password'} value={form.confirmPassword}
+                      onChange={set('confirmPassword')} placeholder="Repeat password"
+                      className="input-field pl-10" required />
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Profile details ── */}
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider pt-2">
+                Profile <span className="normal-case font-normal text-gray-600">(helps admin identify you)</span>
+              </p>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Job Title</label>
+                  <div className="relative">
+                    <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                    <input type="text" value={form.job_title} onChange={set('job_title')}
+                      placeholder="e.g. Software Engineer" className="input-field pl-10" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Department</label>
+                  <div className="relative">
+                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                    <input type="text" value={form.department} onChange={set('department')}
+                      placeholder="e.g. Engineering" className="input-field pl-10" />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">Phone</label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                  <input type="tel" value={form.phone} onChange={set('phone')}
+                    placeholder="+1 555 000 0000" className="input-field pl-10" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">Short Bio</label>
+                <div className="relative">
+                  <FileText className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+                  <textarea value={form.bio} onChange={set('bio')} rows={2}
+                    placeholder="A few words about yourself and your role..."
+                    className="input-field pl-10 resize-none" />
+                </div>
+              </div>
+
+              {error && (
+                <div className="bg-red-900/30 border border-red-700/50 text-red-400 text-sm px-4 py-3 rounded-lg">
+                  {error}
+                </div>
+              )}
+
+              <button type="submit" disabled={loading} className="btn-primary w-full py-3 mt-2">
+                {loading ? 'Creating account...' : 'Create Account'}
+              </button>
+            </form>
+
+            <p className="text-center text-sm text-gray-500 mt-6">
+              Already have an account?{' '}
+              <Link to="/login" className="text-primary-400 hover:text-primary-300 font-medium">
+                Sign in
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
