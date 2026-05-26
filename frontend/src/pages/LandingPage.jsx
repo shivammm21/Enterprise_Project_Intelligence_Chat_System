@@ -1,57 +1,176 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useAuth } from '../context/AuthContext'
 import { 
   Bot, Sparkles, Shield, Zap, FileText, Users, 
-  Github as GithubIcon, Lock, ArrowRight, CheckCircle2 
+  Github as GithubIcon, Lock, ArrowRight, CheckCircle2,
+  User as UserIcon, LogOut, Settings, ChevronDown
 } from 'lucide-react'
 
 export default function LandingPage() {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [visibleSections, setVisibleSections] = useState(new Set())
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisibleSections((prev) => new Set([...prev, entry.target.id]))
+          }
+        })
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -100px 0px' }
+    )
+
+    const sections = document.querySelectorAll('[data-animate]')
+    sections.forEach((section) => observer.observe(section))
+
+    return () => observer.disconnect()
+  }, [])
+
+  const handleLogout = () => {
+    logout()
+    setShowProfileMenu(false)
+  }
+
+  const handleDashboard = () => {
+    navigate('/dashboard')
+  }
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 relative overflow-hidden">
+      {/* Animated Grid Background */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-20" />
+      
+      {/* Gradient Orbs */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-500/30 rounded-full blur-3xl animate-float" />
+      <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-float-delayed" />
+      <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-float-slow" />
+      
+      {/* Content wrapper */}
+      <div className="relative z-10">
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800/50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled 
+          ? 'bg-gray-900/95 backdrop-blur-xl border-b border-gray-800/50 shadow-lg' 
+          : 'bg-gray-900/80 backdrop-blur-xl border-b border-gray-800/50'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 group">
+            <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
               <img 
                 src="/logo.png" 
                 alt="VedaSphere" 
-                className="h-10 w-10 group-hover:scale-110 transition-transform"
+                className="h-8 w-8 sm:h-10 sm:w-10 group-hover:scale-110 transition-transform"
               />
-              <span className="text-xl font-bold text-white">VedaSphere</span>
+              <span className="text-lg sm:text-xl font-bold text-white">VedaSphere</span>
             </Link>
 
             {/* Nav Links */}
-            <div className="flex items-center gap-4">
-              <Link
-                to="/login"
-                className="px-5 py-2 text-gray-300 hover:text-white transition-colors text-sm font-medium"
-              >
-                Login
-              </Link>
-              <Link
-                to="/register"
-                className="px-5 py-2 bg-gradient-to-br from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-primary-500/30 hover:shadow-primary-500/50 hover:scale-105 text-sm"
-              >
-                Get Started
-              </Link>
+            <div className="flex items-center gap-2 sm:gap-4">
+              {user ? (
+                // Logged in - Show profile dropdown
+                <div className="relative">
+                  <button
+                    onClick={() => setShowProfileMenu(!showProfileMenu)}
+                    className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 hover:border-primary-500/50 text-white rounded-xl transition-all"
+                  >
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                      <UserIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
+                    </div>
+                    <span className="text-xs sm:text-sm font-medium hidden sm:inline">{user.name}</span>
+                    <ChevronDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {showProfileMenu && (
+                    <>
+                      {/* Backdrop */}
+                      <div 
+                        className="fixed inset-0 z-40" 
+                        onClick={() => setShowProfileMenu(false)}
+                      />
+                      
+                      {/* Menu */}
+                      <div className="absolute right-0 mt-2 w-56 bg-gray-800/95 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl py-2 z-50 animate-fadeIn">
+                        <div className="px-4 py-3 border-b border-gray-700/50">
+                          <p className="text-sm font-medium text-white">{user.name}</p>
+                          <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                          {user.role === 'admin' && (
+                            <span className="inline-block mt-1 px-2 py-0.5 bg-primary-500/20 text-primary-400 text-xs rounded-full">
+                              Admin
+                            </span>
+                          )}
+                        </div>
+                        
+                        <button
+                          onClick={handleDashboard}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors text-sm"
+                        >
+                          <Settings className="h-4 w-4" />
+                          Go to Dashboard
+                        </button>
+                        
+                        <div className="border-t border-gray-700/50 my-1" />
+                        
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors text-sm"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Logout
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                // Not logged in - Show login/register buttons
+                <>
+                  <Link
+                    to="/login"
+                    className="px-3 sm:px-5 py-2 text-gray-300 hover:text-white transition-colors text-xs sm:text-sm font-medium"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="px-3 sm:px-5 py-2 bg-gradient-to-br from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-primary-500/30 hover:shadow-primary-500/50 hover:scale-105 text-xs sm:text-sm"
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6">
+      <section className="pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-4xl mx-auto">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500/10 border border-primary-500/30 rounded-full text-primary-300 text-sm font-medium mb-8">
-              <Sparkles className="h-4 w-4" />
+            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-primary-500/10 border border-primary-500/30 rounded-full text-primary-300 text-xs sm:text-sm font-medium mb-6 sm:mb-8">
+              <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
               Enterprise-Grade AI Knowledge Management
             </div>
 
             {/* Heading */}
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4 sm:mb-6 leading-tight">
               Chat with Your
               <span className="block bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent">
                 Documents & Code
@@ -59,26 +178,19 @@ export default function LandingPage() {
             </h1>
 
             {/* Subheading */}
-            <p className="text-xl text-gray-400 mb-10 leading-relaxed max-w-2xl mx-auto">
+            <p className="text-base sm:text-xl text-gray-400 mb-8 sm:mb-10 leading-relaxed max-w-2xl mx-auto px-4">
               Transform your documents and GitHub repositories into an intelligent knowledge base. 
               Get instant answers powered by AI with source citations.
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex items-center justify-center gap-4 flex-wrap">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4">
               <Link
                 to="/register"
-                className="flex items-center gap-2 px-8 py-4 bg-gradient-to-br from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-2xl font-semibold transition-all shadow-xl shadow-primary-500/30 hover:shadow-primary-500/50 hover:scale-105"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-br from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-2xl font-semibold transition-all shadow-xl shadow-primary-500/30 hover:shadow-primary-500/50 hover:scale-105"
               >
                 Start Free Trial
-                <ArrowRight className="h-5 w-5" />
-              </Link>
-              <Link
-                to="/login"
-                className="flex items-center gap-2 px-8 py-4 bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 hover:border-primary-500/50 text-white rounded-2xl font-semibold transition-all hover:bg-gray-800"
-              >
-                <Bot className="h-5 w-5" />
-                View Demo
+                <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
               </Link>
             </div>
 
@@ -86,8 +198,12 @@ export default function LandingPage() {
             <div className="mt-16 relative">
               <div className="absolute inset-0 bg-primary-500/20 rounded-3xl blur-3xl" />
               <div className="relative bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 shadow-2xl">
-                <div className="aspect-video bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl flex items-center justify-center">
-                  <Bot className="h-24 w-24 text-primary-400" />
+                <div className="aspect-video bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl flex items-center justify-center overflow-hidden">
+                  <img 
+                    src="/main-tool.png" 
+                    alt="VedaSphere Dashboard" 
+                    className="w-full h-full object-contain p-4"
+                  />
                 </div>
               </div>
             </div>
@@ -96,20 +212,24 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-6">
+      <section 
+        id="features" 
+        data-animate 
+        className={`py-12 sm:py-20 px-4 sm:px-6 ${visibleSections.has('features') ? 'animate-in' : ''}`}
+      >
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">
               Powerful Features for Modern Teams
             </h2>
-            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+            <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto px-4">
               Everything you need to build an intelligent knowledge base for your organization
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 hover:border-primary-500/50 transition-all group">
+            <div data-stagger="1" className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 hover:border-primary-500/50 transition-all group opacity-0">
               <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-primary-500/30 group-hover:scale-110 transition-transform">
                 <FileText className="h-7 w-7 text-white" />
               </div>
@@ -120,7 +240,7 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 2 */}
-            <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 hover:border-primary-500/50 transition-all group">
+            <div data-stagger="2" className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 hover:border-primary-500/50 transition-all group opacity-0">
               <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-primary-500/30 group-hover:scale-110 transition-transform">
                 <GithubIcon className="h-7 w-7 text-white" />
               </div>
@@ -131,7 +251,7 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 3 */}
-            <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 hover:border-primary-500/50 transition-all group">
+            <div data-stagger="3" className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 hover:border-primary-500/50 transition-all group opacity-0">
               <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-primary-500/30 group-hover:scale-110 transition-transform">
                 <Shield className="h-7 w-7 text-white" />
               </div>
@@ -142,7 +262,7 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 4 */}
-            <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 hover:border-primary-500/50 transition-all group">
+            <div data-stagger="4" className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 hover:border-primary-500/50 transition-all group opacity-0">
               <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-primary-500/30 group-hover:scale-110 transition-transform">
                 <Users className="h-7 w-7 text-white" />
               </div>
@@ -153,7 +273,7 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 5 */}
-            <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 hover:border-primary-500/50 transition-all group">
+            <div data-stagger="5" className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 hover:border-primary-500/50 transition-all group opacity-0">
               <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-primary-500/30 group-hover:scale-110 transition-transform">
                 <Zap className="h-7 w-7 text-white" />
               </div>
@@ -164,7 +284,7 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 6 */}
-            <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 hover:border-primary-500/50 transition-all group">
+            <div data-stagger="6" className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 hover:border-primary-500/50 transition-all group opacity-0">
               <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-primary-500/30 group-hover:scale-110 transition-transform">
                 <Lock className="h-7 w-7 text-white" />
               </div>
@@ -178,13 +298,17 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 px-6 bg-gray-900/50">
+      <section 
+        id="how-it-works" 
+        data-animate 
+        className={`py-12 sm:py-20 px-4 sm:px-6 bg-gray-900/50 ${visibleSections.has('how-it-works') ? 'animate-in' : ''}`}
+      >
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">
               How It Works
             </h2>
-            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+            <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto px-4">
               Get started in minutes with our simple three-step process
             </p>
           </div>
@@ -235,7 +359,11 @@ export default function LandingPage() {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-20 px-6">
+      <section 
+        id="benefits" 
+        data-animate 
+        className={`py-20 px-6 ${visibleSections.has('benefits') ? 'animate-in' : ''}`}
+      >
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -317,7 +445,11 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-6">
+      <section 
+        id="cta" 
+        data-animate 
+        className={`py-20 px-6 ${visibleSections.has('cta') ? 'animate-in' : ''}`}
+      >
         <div className="max-w-4xl mx-auto">
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-primary-600/20 rounded-3xl blur-3xl" />
@@ -372,6 +504,7 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+      </div> {/* End content wrapper */}
     </div>
   )
 }
