@@ -8,7 +8,8 @@ import ChatPage from './pages/ChatPage'
 import GitHubCallback from './pages/GitHubCallback'
 import GroupsPage from './pages/GroupsPage'
 import LoadingSpinner from './components/LoadingSpinner'
-//add
+import AppLayout from './components/AppLayout'
+
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth()
   if (loading) return <LoadingSpinner fullScreen />
@@ -39,17 +40,21 @@ function ProjectRoute() {
   if (user.role !== 'admin') return <Navigate to={`/projects/${id}/chat`} replace />
   return <ProjectPage />
 }
+
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
-      <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
       <Route path="/github/callback" element={<PrivateRoute><GitHubCallback /></PrivateRoute>} />
-      {/* Project detail — admin only; users are redirected to chat */}
-      {/* <Route path="/groups" element={<AdminRoute><GroupsPage /></AdminRoute>} /> */}
-      <Route path="/projects/:id" element={<ProjectRoute />} />
+
+      <Route path="/" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
+        <Route index element={<DashboardPage />} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="groups" element={<AdminRoute><GroupsPage /></AdminRoute>} />
+        <Route path="projects/:id" element={<ProjectRoute />} />
+      </Route>
+
       <Route path="/projects/:id/chat" element={<PrivateRoute><ChatPage /></PrivateRoute>} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
