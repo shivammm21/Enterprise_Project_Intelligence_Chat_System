@@ -3,7 +3,6 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { projectService } from '../services/projects'
 import { documentService } from '../services/documents'
-import Sidebar from '../components/Sidebar'
 import DocumentUpload from '../components/DocumentUpload'
 import DocumentList from '../components/DocumentList'
 import AccessManager from '../components/AccessManager'
@@ -23,7 +22,6 @@ export default function ProjectPage() {
   const { user } = useAuth()
   const isAdmin = user?.role === 'admin'
   const [project, setProject] = useState(null)
-  const [allProjects, setAllProjects] = useState([])
   const [documents, setDocuments] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('documents')
@@ -46,14 +44,12 @@ export default function ProjectPage() {
 
   const loadData = async () => {
     try {
-      const [proj, docs, projects] = await Promise.all([
+      const [proj, docs] = await Promise.all([
         projectService.get(id),
         documentService.list(id),
-        projectService.list(),
       ])
       setProject(proj)
       setDocuments(docs)
-      setAllProjects(projects)
       setTimeout(() => setIsTransitioning(false), 100)
     } catch {
       toast.error('Failed to load project')
@@ -84,9 +80,6 @@ export default function ProjectPage() {
   if (loading) return <LoadingSpinner fullScreen />
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 overflow-hidden">
-      <Sidebar projects={allProjects} />
-
       <main className="flex-1 flex flex-col min-w-0">
         {/* Fixed Header Section */}
         <div className="flex-shrink-0">
@@ -252,20 +245,16 @@ export default function ProjectPage() {
           )}
         </div>
       </main>
-    </div>
   )
 }
 
 function TabButton({ active, onClick, children }) {
+  const buttonStyles = active
+    ? 'flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30'
+    : 'flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all text-gray-400 hover:text-gray-200 hover:bg-gray-700/30'
+
   return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
-        active
-          ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30'
-          : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/30'
-      }`}
-    >
+    <button onClick={onClick} className={buttonStyles}>
       {children}
     </button>
   )
