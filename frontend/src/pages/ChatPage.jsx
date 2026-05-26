@@ -3,13 +3,15 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { projectService } from '../services/projects'
 import { chatService } from '../services/chat'
+import { useVoice } from '../hooks/useVoice'
 import LoadingSpinner from '../components/LoadingSpinner'
 import TypingAnimation from '../components/TypingAnimation'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import {
   ArrowLeft, Send, Bot, User, ChevronDown, ChevronUp,
-  FileText, Sparkles, FolderOpen, MessageSquare, AlertCircle, Copy, Check
+  FileText, Sparkles, FolderOpen, MessageSquare, AlertCircle,
+  Copy, Check, Mic, MicOff, Volume2, VolumeX
 } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
@@ -25,9 +27,28 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [typingMessageId, setTypingMessageId] = useState(null)
+  const [lastInputWasVoice, setLastInputWasVoice] = useState(false)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const messagesContainerRef = useRef(null)
+
+  // ── Voice ──────────────────────────────────────────────────────────────────
+  const {
+    sttSupported, isListening, interimText, startListening, stopListening,
+    ttsSupported, isSpeaking, speakingMsgId, speak, stopSpeaking,
+  } = useVoice({
+    onTranscript: (text) => {
+      setInput((prev) => (prev ? `${prev} ${text}` : text))
+      setLastInputWasVoice(true)
+    },
+    onFinalTranscript: (text) => {
+      // Auto-send after voice input — feels like a natural voice conversation
+      sendMessage(text, true)
+    },
+    onError: (err) => {
+      toast.error(`Microphone error: ${err}`)
+    },
+  })
 
   const starterSuggestions = [
     'Summarize the key points from the uploaded documents.',
@@ -66,9 +87,12 @@ export default function ChatPage() {
     }
   }
 
-  const sendMessage = async (question) => {
+  const sendMessage = async (question, fromVoice = false) => {
     const trimmed = question.trim()
     if (!trimmed || sending) return
+
+    const wasVoice = fromVoice || lastInputWasVoice
+    setLastInputWasVoice(false)
 
     const userMsg = {
       id: `user-${Date.now()}`,
@@ -82,16 +106,18 @@ export default function ChatPage() {
 
     try {
       const response = await chatService.sendMessage(id, trimmed)
+      const assistantMsgId = `assistant-${Date.now()}`
       const assistantMsg = {
-        id: `assistant-${Date.now()}`,
+        id: assistantMsgId,
         role: 'assistant',
         content: response.answer,
         sources: response.sources || [],
         timestamp: response.created_at,
         isTyping: true,
+        autoSpeak: wasVoice && ttsSupported,  // flag to speak after typing
       }
       setMessages((prev) => [...prev, assistantMsg])
-      setTypingMessageId(assistantMsg.id)
+      setTypingMessageId(assistantMsgId)
     } catch (err) {
       const errorMsg = {
         id: `error-${Date.now()}`,
@@ -126,9 +152,14 @@ export default function ChatPage() {
   const handleTypingComplete = (messageId) => {
     setTypingMessageId(null)
     setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === messageId ? { ...msg, isTyping: false } : msg
-      )
+      prev.map((msg) => {
+        if (msg.id !== messageId) return msg
+        // Auto-speak if the question was asked by voice
+        if (msg.autoSpeak) {
+          speak(msg.content, msg.id)
+        }
+        return { ...msg, isTyping: false, autoSpeak: false }
+      })
     )
   }
 
@@ -246,6 +277,11 @@ export default function ChatPage() {
                 key={msg.id} 
                 message={msg} 
                 onTypingComplete={() => handleTypingComplete(msg.id)}
+                ttsSupported={ttsSupported}
+                isSpeaking={isSpeaking}
+                speakingMsgId={speakingMsgId}
+                onSpeak={(text) => speak(text, msg.id)}
+                onStopSpeaking={stopSpeaking}
               />
             ))}
 
@@ -306,15 +342,22 @@ export default function ChatPage() {
         <div className="relative border-t border-gray-800/50 bg-gray-900/60 backdrop-blur-xl p-6">
           <div className="max-w-4xl mx-auto">
             <div className="relative">
-              <div className="flex gap-3 items-center bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 rounded-3xl px-5 py-4 focus-within:border-primary-500/50 focus-within:shadow-lg focus-within:shadow-primary-500/10 transition-all">
+              <div className={`flex gap-3 items-center bg-gray-800/60 backdrop-blur-sm border rounded-3xl px-5 py-4 transition-all ${
+                isListening
+                  ? 'border-red-500/60 shadow-lg shadow-red-500/10'
+                  : 'border-gray-700/50 focus-within:border-primary-500/50 focus-within:shadow-lg focus-within:shadow-primary-500/10'
+              }`}>
                 <textarea
                   ref={inputRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  value={isListening && interimText ? `${input}${input ? ' ' : ''}${interimText}` : input}
+                  onChange={(e) => !isListening && setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder={`Ask anything about ${project?.name}...`}
+                  placeholder={isListening ? 'Listening… speak now' : `Ask anything about ${project?.name}...`}
                   rows={1}
-                  className="flex-1 bg-transparent text-gray-100 placeholder-gray-500 resize-none focus:outline-none text-sm leading-relaxed max-h-32 text-center placeholder:text-center"
+                  readOnly={isListening}
+                  className={`flex-1 bg-transparent placeholder-gray-500 resize-none focus:outline-none text-sm leading-relaxed max-h-32 text-center placeholder:text-center transition-colors ${
+                    isListening ? 'text-red-300 cursor-default' : 'text-gray-100'
+                  }`}
                   style={{ minHeight: '24px' }}
                   onInput={(e) => {
                     e.target.style.height = 'auto'
@@ -325,19 +368,54 @@ export default function ChatPage() {
                     if (!e.target.value) e.target.classList.add('text-center')
                   }}
                 />
+
+                {/* Mic button */}
+                {sttSupported && (
+                  <button
+                    onClick={isListening ? stopListening : startListening}
+                    disabled={sending}
+                    title={isListening ? 'Stop recording' : 'Speak your question'}
+                    className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                      isListening
+                        ? 'bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/40 animate-pulse'
+                        : 'bg-gray-700/60 hover:bg-gray-700 text-gray-400 hover:text-gray-200'
+                    }`}
+                  >
+                    {isListening
+                      ? <MicOff className="h-4 w-4 text-white" />
+                      : <Mic className="h-4 w-4" />
+                    }
+                  </button>
+                )}
+
+                {/* Send button */}
                 <button
                   onClick={handleSend}
-                  disabled={!input.trim() || sending}
+                  disabled={(!input.trim() && !interimText) || sending || isListening}
                   className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl flex items-center justify-center transition-all shadow-lg shadow-primary-500/30 hover:shadow-primary-500/50 hover:scale-105"
                 >
                   <Send className="h-4 w-4 text-white" />
                 </button>
               </div>
             </div>
-            <p className="text-xs text-gray-600 text-center mt-3">
-              Press <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-gray-400">Enter</kbd> to send · 
-              <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-gray-400 ml-1">Shift+Enter</kbd> for new line
-            </p>
+
+            {/* Hint row */}
+            <div className="flex items-center justify-center gap-4 mt-3">
+              {isListening ? (
+                <p className="text-xs text-red-400 flex items-center gap-1.5 animate-pulse">
+                  <span className="w-1.5 h-1.5 bg-red-400 rounded-full" />
+                  Recording — click the mic or speak to finish
+                </p>
+              ) : (
+                <p className="text-xs text-gray-600">
+                  Press <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-gray-400">Enter</kbd> to send ·{' '}
+                  <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-gray-400">Shift+Enter</kbd> for new line
+                  {sttSupported && (
+                    <> · <Mic className="inline h-3 w-3 mx-0.5 text-gray-500" /> to speak</>
+                  )}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -345,10 +423,11 @@ export default function ChatPage() {
   )
 }
 
-function ChatMessage({ message, onTypingComplete }) {
+function ChatMessage({ message, onTypingComplete, ttsSupported, isSpeaking, speakingMsgId, onSpeak, onStopSpeaking }) {
   const [showSources, setShowSources] = useState(false)
   const [copied, setCopied] = useState(false)
   const isUser = message.role === 'user'
+  const isThisSpeaking = isSpeaking && speakingMsgId === message.id
 
   const handleCopy = async () => {
     try {
@@ -384,8 +463,8 @@ function ChatMessage({ message, onTypingComplete }) {
       {/* Content */}
       <div className={`flex-1 max-w-3xl ${isUser ? 'flex flex-col items-end' : ''}`}>
         {/* Message bubble */}
-        <div className={`group relative ${isUser ? 'max-w-2xl' : ''}`}>
-          <div className={`px-6 py-4 text-sm leading-relaxed shadow-lg relative ${
+        <div className={`group ${isUser ? 'max-w-2xl' : ''}`}>
+          <div className={`px-6 py-4 text-sm leading-relaxed shadow-lg ${
             isUser
               ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white rounded-3xl rounded-tr-md'
               : message.isError
@@ -469,26 +548,46 @@ function ChatMessage({ message, onTypingComplete }) {
               </div>
             )}
 
-            {/* Copy button - only for assistant messages */}
-            {!isUser && !message.isError && !message.isTyping && (
-              <button
-                onClick={handleCopy}
-                className="absolute top-2 right-2 p-2 rounded-lg bg-gray-700/0 hover:bg-gray-700/50 text-gray-400 hover:text-gray-200 opacity-0 group-hover:opacity-100 transition-all duration-200"
-                title="Copy response"
-              >
-                {copied ? (
-                  <Check className="h-4 w-4 text-green-400" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </button>
-            )}
           </div>
 
-          {/* Timestamp */}
-          <p className={`text-xs text-gray-600 mt-2 px-2 ${isUser ? 'text-right' : ''}`}>
-            {format(new Date(message.timestamp), 'h:mm a')}
-          </p>
+          {/* Timestamp + action buttons row — outside the bubble */}
+          <div className={`flex items-center gap-2 mt-2 px-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
+            <p className="text-xs text-gray-600">
+              {format(new Date(message.timestamp), 'h:mm a')}
+            </p>
+
+            {/* Action buttons — only for completed assistant messages */}
+            {!isUser && !message.isError && !message.isTyping && (
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                {ttsSupported && (
+                  <button
+                    onClick={() => isThisSpeaking ? onStopSpeaking() : onSpeak(message.content)}
+                    className={`p-1.5 rounded-lg transition-all ${
+                      isThisSpeaking
+                        ? 'text-primary-400 bg-primary-600/20'
+                        : 'text-gray-500 hover:text-gray-300 hover:bg-gray-700/50'
+                    }`}
+                    title={isThisSpeaking ? 'Stop reading' : 'Read aloud'}
+                  >
+                    {isThisSpeaking
+                      ? <VolumeX className="h-3.5 w-3.5" />
+                      : <Volume2 className="h-3.5 w-3.5" />
+                    }
+                  </button>
+                )}
+                <button
+                  onClick={handleCopy}
+                  className="p-1.5 rounded-lg text-gray-500 hover:text-gray-300 hover:bg-gray-700/50 transition-all"
+                  title="Copy response"
+                >
+                  {copied
+                    ? <Check className="h-3.5 w-3.5 text-green-400" />
+                    : <Copy className="h-3.5 w-3.5" />
+                  }
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Sources */}
