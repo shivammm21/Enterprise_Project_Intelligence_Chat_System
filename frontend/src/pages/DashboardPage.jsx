@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { projectService } from '../services/projects'
 import { accessService } from '../services/access'
 import { groupService } from '../services/groups'
-import Sidebar from '../components/Sidebar'
 import ProjectCard from '../components/ProjectCard'
 import CreateProjectModal from '../components/CreateProjectModal'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -71,9 +70,7 @@ export default function DashboardPage() {
   const latestProject = isAdmin && projects.length > 0 ? projects[0] : null
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 overflow-hidden">
-      <Sidebar projects={projects} />
-
+    <>
       <main className="flex-1 flex flex-col min-w-0">
 
         {/* Header */}
@@ -223,7 +220,7 @@ export default function DashboardPage() {
       {showModal && isAdmin && (
         <CreateProjectModal onClose={() => setShowModal(false)} onCreate={handleCreate} />
       )}
-    </div>
+    </>
   )
 }
 

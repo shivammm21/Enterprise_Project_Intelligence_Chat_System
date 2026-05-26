@@ -1,36 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { useAuth } from '../context/AuthContext'
-import { projectService } from '../services/projects'
-import Sidebar from '../components/Sidebar'
 import GroupManager from '../components/GroupManager'
 import LoadingSpinner from '../components/LoadingSpinner'
 import toast from 'react-hot-toast'
 
 export default function GroupsPage() {
   const { user } = useAuth()
-  const [projects, setProjects] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    loadProjects()
-  }, [])
-
-  const loadProjects = async () => {
-    try {
-      const allProjects = await projectService.list()
-      setProjects(allProjects)
-    } catch {
-      toast.error('Failed to load projects')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (loading) return <LoadingSpinner fullScreen />
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 overflow-hidden">
-      <Sidebar projects={projects} />
       <main className="flex-1 flex flex-col min-w-0">
         <div className="bg-gray-900/60 backdrop-blur-xl border-b border-gray-800/50 px-8 py-6 shadow-lg">
           <div className="flex items-center justify-between gap-4">
@@ -53,6 +30,5 @@ export default function GroupsPage() {
           </div>
         </div>
       </main>
-    </div>
   )
 }
